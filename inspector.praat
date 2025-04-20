@@ -57,24 +57,24 @@
 # method of pitch detection.
 
 form: "Inspector"
-    folder: "Input directory", "/home/silveira/Drive/Universidade/Doutorado/Experimentos/testing_area/results"
-    folder: "Output directory", "/home/silveira/Drive/Universidade/Doutorado/Experimentos/testing_area/results"
+    folder: "Input directory", ""
+    folder: "Output directory", ""
 
     real: "Time step (s)", "0.01"
     
     comment: "What do you want to export?"
 
-    boolean: "Export TextGrid", "0"
-    boolean: "Export Pitch", "0"
-    boolean: "Export PitchTier", "0"
+    boolean: "Export TextGrid", "1"
+    boolean: "Export Pitch", "1"
+    boolean: "Export PitchTier", "1"
     boolean: "Export Intensity", "0"
-    boolean: "Export IntensityTier", "0"
+    boolean: "Export IntensityTier", "1"
 
     comment: "What do you want to inspect?"
 
     boolean: "Inspect SoundEditor", "1"
-    boolean: "Inspect TextGrid", "0"
-    boolean: "Inspect Pitch", "0"
+    boolean: "Inspect TextGrid", "1"
+    boolean: "Inspect Pitch", "1"
     boolean: "Inspect PitchTier", "0"
     boolean: "Inspect IntensityTier", "0"
 endform
