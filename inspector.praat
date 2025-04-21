@@ -347,6 +347,7 @@ for i from 1 to num_of_files
     endif
 
     if export_IntensityTier
+        selectObject: intensity_tier
         if saving_method$ == "In separate directories"
             Save as short text file: intensityTier_directory$ + current_file$ + ".IntensityTier"
         else
