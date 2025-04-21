@@ -58,7 +58,6 @@
 
 form: "Inspector"
     folder: "Input directory", ""
-    folder: "Output directory", ""
 
     real: "Time step (s)", "0.01"
     
@@ -67,7 +66,7 @@ form: "Inspector"
     boolean: "Export TextGrid", "1"
     boolean: "Export Pitch", "1"
     boolean: "Export PitchTier", "1"
-    boolean: "Export Intensity", "0"
+    boolean: "Export Intensity", "1"
     boolean: "Export IntensityTier", "1"
 
     comment: "What do you want to inspect?"
@@ -75,9 +74,102 @@ form: "Inspector"
     boolean: "Inspect SoundEditor", "1"
     boolean: "Inspect TextGrid", "1"
     boolean: "Inspect Pitch", "1"
-    boolean: "Inspect PitchTier", "0"
-    boolean: "Inspect IntensityTier", "0"
+    boolean: "Inspect PitchTier", "1"
+    boolean: "Inspect IntensityTier", "1"
+
+    comment: "Save the objects..."
+    choice: "Saving method", 1
+    option: "In the input directory"
+    option: "In a single different directory"
+    option: "In separate directories"
+
+    comment: "Jump to file... (if 0, begin from the beginning)"
+    integer: "File number position", "0"
 endform
+
+if not endsWith (input_directory$, "/")
+    input_directory$ = input_directory$ + "/"
+endif
+
+overwrite$ = "Yes"
+
+if saving_method$ == "In the input directory"
+    beginPause: ""
+        comment: "You want to export objects to the input directory. Do you want to overwrite the original files?"
+        choice: "Overwrite", 1
+        option: "Yes"
+        option: "No"
+        comment: "If you have chosen 'No', inform the tag to attach to the filename:"
+        text: "Filename tag", "tag"
+    clicked = endPause: "OK", "Interrupt", 1, 2
+    if clicked == 2
+        exitScript: ""
+    endif
+elsif saving_method$ == "In separate directories"
+    beginPause: ""
+        comment: "Inform the directories of the objects to be exported."
+        folder: "TextGrid directory", input_directory$ + "TextGrids"
+        folder: "Pitch directory", input_directory$ + "Pitch"
+        folder: "PitchTier directory", input_directory$ + "PitchTier"
+        folder: "Intensity directory", input_directory$ + "Intensity"
+        folder: "IntensityTier directory", input_directory$ + "IntensityTier"
+    clicked = endPause: "OK", "Interrupt", 1, 2
+
+    if clicked == 2
+         exitScript: ""
+    endif
+
+    if not endsWith (textGrid_directory$, "/")
+        textGrid_directory$ = textGrid_directory$ + "/"
+    endif
+
+    if not endsWith (pitch_directory$, "/")
+         pitch_directory$ = pitch_directory$ + "/"
+    endif
+
+    if not endsWith (pitchTier_directory$, "/")
+         pitchTier_directory$ = pitchTier_directory$ + "/"
+    endif
+
+    if not endsWith (intensity_directory$, "/")
+         intensity_directory$ = intensity_directory$ + "/"
+    endif
+
+    if not endsWith (intensityTier_directory$, "/")
+         intensityTier_directory$ = intensityTier_directory$ + "/"
+    endif
+
+   if export_TextGrid
+       createFolder: textGrid_directory$
+   endif
+
+   if export_Pitch
+       createFolder: pitch_directory$
+   endif
+
+   if export_PitchTier
+       createFolder: pitchTier_directory$
+   endif
+
+   if export_Intensity
+       createFolder: intensity_directory$
+   endif
+
+   if export_IntensityTier
+       createFolder: intensityTier_directory$
+   endif
+else
+    beginPause: ""
+        folder: "Output directory", input_directory$ + "output/"
+    clicked = endPause: "OK", "Interrupt", 1, 2
+    if clicked == 2
+         exitScript: ""
+    endif
+    if not endsWith (output_directory$, "/")
+        output_directory$ = output_directory$ + "/"
+    endif
+    createFolder: output_directory$
+endif
 
 if export_Pitch or export_PitchTier or inspect_Pitch or inspect_PitchTier
     beginPause: "Filtered autocorrelation settings"
@@ -96,6 +188,9 @@ if export_Pitch or export_PitchTier or inspect_Pitch or inspect_PitchTier
         real: "Octave jump cost", "0.35"
         real: "Voiced unvoiced cost", "0.14"
     clicked = endPause: "OK", "Interrupt", 1, 2
+    if clicked == 2
+        exitScript: ""
+    endif
     pitch_floor_1 = pitch_floor
 endif
 
@@ -104,18 +199,11 @@ if export_Intensity or export_IntensityTier or inspect_IntensityTier
         real: "Pitch floor (Hz)", "100.0"
         boolean: "Subtract mean", "yes"
     clicked = endPause: "OK", "Interrupt", 1, 2
+    if clicked == 2
+        exitScript: ""
+    endif
     pitch_floor_2 = pitch_floor
 endif
-
-if not endsWith (input_directory$, "/")
-    input_directory$ = input_directory$ + "/"
-endif
-
-if not endsWith (output_directory$, "/")
-    output_directory$ = output_directory$ + "/"
-endif
-
-createFolder: output_directory$
 
 fileList = Create Strings as file list: "fileList", input_directory$ + "*.TextGrid"
 num_of_files = Get number of strings
@@ -124,7 +212,18 @@ if num_of_files = 0
     exitScript: "No TextGrid file found in the input directory."
 endif
 
+counter = 0
+
+if file_number_position > 0
+    fileList = Extract part: file_number_position, num_of_files
+    total_num_of_files = num_of_files
+    num_of_files = Get number of strings
+    counter = file_number_position - 1
+endif
+
 for i from 1 to num_of_files
+
+    counter = counter + 1
     selectObject: fileList
     current_file$ = Get string: i
     current_file$ = current_file$ - ".TextGrid"
@@ -140,7 +239,15 @@ for i from 1 to num_of_files
         selectObject: audio
         intensity = To Intensity: pitch_floor_2, time_step, subtract_mean
         if export_Intensity
-            Save as short text file: output_directory$ + current_file$ + ".Intensity"
+            if saving_method$ == "In separate directories"
+                Save as short text file: intensity_directory$ + current_file$ + ".Intensity"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "Yes"
+                Save as short text file: input_directory$ + current_file$ + ".Intensity"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "No"
+                Save as short text file: input_directory$ + current_file$ + "_" + filename_tag$ + ".Intensity"
+            elsif saving_method$ == "In a single different directory"
+                Save as short text file: output_directory$ + current_file$ + ".Intensity"
+            endif
         endif
         if export_IntensityTier or inspect_IntensityTier
             intensity_tier = Down to IntensityTier
@@ -168,11 +275,12 @@ for i from 1 to num_of_files
     endif
 
     beginPause: ""
+        comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files) 
         comment: "Click on Next to proceed."
     clicked = endPause: "Next", "Interrupt", 1, 2
 
     if clicked == 2
-       num_of_files = i
+        exitScript: ""
     endif
 
     if inspect_Pitch
@@ -193,8 +301,12 @@ for i from 1 to num_of_files
         if inspect_PitchTier
             View & Edit
             beginPause: ""
+                comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files) 
                 comment: "Click on Next to proceed."
             clicked = endPause: "Next", "Interrupt", 1, 2
+            if clicked == 2
+                exitScript: ""
+            endif
             editor: pitch_tier
                 Close
             endeditor
@@ -211,24 +323,66 @@ for i from 1 to num_of_files
         endeditor
     endif
 
+            if saving_method$ == "In separate directories"
+                Save as short text file: intensity_directory$ + current_file$ + ".Intensity"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "Yes"
+                Save as short text file: input_directory$ + current_file$ + ".Intensity"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "No"
+                Save as short text file: input_directory$ + current_file$ + "_" + filename_tag$ + ".Intensity"
+            elsif saving_method$ == "In a single different directory"
+                Save as short text file: output_directory$ + current_file$ + ".Intensity"
+            endif
+
     if export_TextGrid
         selectObject: tg
-        Save as short text file: output_directory$ + current_file$ + ".TextGrid"
+            if saving_method$ == "In separate directories"
+                Save as short text file: textGrid_directory$ + current_file$ + ".TextGrid"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "Yes"
+                Save as short text file: input_directory$ + current_file$ + ".TextGrid"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "No"
+                Save as short text file: input_directory$ + current_file$ + "_" + filename_tag$ + ".TextGrid"
+            elsif saving_method$ == "In a single different directory"
+                Save as short text file: output_directory$ + current_file$ + ".TextGrid"
+            endif
     endif
 
     if export_Pitch
         selectObject: pitch
-        Save as short text file: output_directory$ + current_file$ + ".Pitch"
+            if saving_method$ == "In separate directories"
+                Save as short text file: pitch_directory$ + current_file$ + ".Pitch"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "Yes"
+                Save as short text file: input_directory$ + current_file$ + ".Pitch"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "No"
+                Save as short text file: input_directory$ + current_file$ + "_" + filename_tag$ + ".Pitch"
+            elsif saving_method$ == "In a single different directory"
+                Save as short text file: output_directory$ + current_file$ + ".Pitch"
+            endif
     endif
 
     if export_PitchTier
         selectObject: pitch_tier
-        Save as short text file: output_directory$ + current_file$ + ".PitchTier"
+            if saving_method$ == "In separate directories"
+                Save as short text file: pitchTier_directory$ + current_file$ + ".PitchTier"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "Yes"
+                Save as short text file: input_directory$ + current_file$ + ".PitchTier"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "No"
+                Save as short text file: input_directory$ + current_file$ + "_" + filename_tag$ + ".PitchTier"
+            elsif saving_method$ == "In a single different directory"
+                Save as short text file: output_directory$ + current_file$ + ".PitchTier"
+            endif
     endif
 
     if export_IntensityTier
         selectObject: intensity_tier
-        Save as short text file: output_directory$ + current_file$ + ".IntensityTier"
+            if saving_method$ == "In separate directories"
+                Save as short text file: intensityTier_directory$ + current_file$ + ".IntensityTier"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "Yes"
+                Save as short text file: input_directory$ + current_file$ + ".IntensityTier"
+            elsif saving_method$ == "In the input directory" and overwrite$ == "No"
+                Save as short text file: input_directory$ + current_file$ + "_" + filename_tag$ + ".IntensityTier"
+            elsif saving_method$ == "In a single different directory"
+                Save as short text file: output_directory$ + current_file$ + ".IntensityTier"
+            endif
     endif
 
 endfor
@@ -236,8 +390,3 @@ endfor
 select all
 Remove
 
-if clicked == 2
-   writeInfoLine: "Script interrupted."
-else
-   writeInfoLine: "Script done."    
-endif
