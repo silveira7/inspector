@@ -7,7 +7,7 @@
 # INSPECTOR
 # --------------------------------------------------------------------
 #
-# Version: 1.0 (2025-04-20)
+# Version: 1.0 (2025-04-25)
 # Author: Gustavo Silveira
 # If you encounter any bugs or issues, please report them via email to:
 # silveira@tuta.io
@@ -46,7 +46,7 @@
 # and IntensityTier.
 #
 # PARAMETERS:
-# Besides the input and output directories, the user must specify
+# Besides the input directory, the user must specify
 # which objects to be exported and inspected. The TIME STEP parameter
 # sets how many measurements of F0 (for the Pitch and PitchTier objects)
 # and intensity (for the Intensity and IntensityTier objects) are made per

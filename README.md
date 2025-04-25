@@ -39,8 +39,13 @@ TextGrids files (`.TextGrid`).
 
 Before execution, the user must define the following parameters:
 
-- **Input directory**: Location of the `.wav` and `.TextGrid` file pairs.  
-- **Output directory**: Where the derived objects will be saved.  
-- **Objects to process**: Selection of which derived objects should be computed, inspected, and exported.  
-- **Time step**: Determines the temporal resolution of the `Pitch`, `PitchTier`, `Intensity`, and `IntensityTier` objects.  
-  - Default: `0.01` seconds (i.e., 10 ms between measurements).  
+- **Input directory**: Location of the `.wav` and `.TextGrid` file pairs.
+- **Time step**: Determines the temporal resolution of the `Pitch`, `PitchTier`, `Intensity`, and `IntensityTier` objects.
+  - Default: `0.01` seconds (i.e., 10 ms between measurements).
+- **Objects to process**: Selection of which derived objects should be computed, inspected, and exported.
+- **Saving method to process**: Save the output files in (i) the input directory; (ii) in a single different directory; or (iii) in different directories, one for each object type.
+
+## State saving
+
+    Because inspecting all files in one go is often impossible, the script tracks progress automatically. If interrupted, it saves the current position, allowing the next run on the same directory to resume where it left off.
+    
