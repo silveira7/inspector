@@ -59,7 +59,7 @@
 form: "Inspector"
     folder: "Input directory", ""
 
-    real: "Time step (s)", "0.01"
+    real: "Time step (s)", "0.001"
 
     comment: "What do you want to export?"
 
@@ -77,15 +77,50 @@ form: "Inspector"
     boolean: "Inspect PitchTier", "1"
     boolean: "Inspect IntensityTier", "1"
 
-    comment: "Save the objects..."
     choice: "Saving method", 1
     option: "In the input directory"
     option: "In a single different directory"
     option: "In separate directories"
 
-    comment: "Jump to file... (if 0, begin from the beginning)"
-    integer: "File number position", "0"
+    choice: "Where to begin", 1
+    option: "Begin from where I stopped"
+    option: "Begin from the beginning"
+    option: "Jump to file"
 endform
+
+log_file$ = "log.Table"
+log_exists = fileReadable (log_file$)
+
+if log_exists
+    log = Read from file: log_file$
+else
+    log = Create Table with column names: "table", 1, "input position"
+    Save as text file: log_file$
+endif
+
+row = Search column: "input", input_directory$
+
+if row == 0
+    num_of_rows = Get number of rows
+    Append row
+    row = num_of_rows + 1
+    Set string value: row, "input", input_directory$
+    Set numeric value: row, "position", 0
+endif
+
+if where_to_begin == 2
+    position = 0
+elsif where_to_begin == 3
+    beginPause: ""
+        integer: "Jump to file", "0"
+    clicked = endPause: "Interrupt", "Next", 1, 0
+    if clicked == 1
+       exitScript: ""
+    endif
+    position = jump_to_file
+else
+    position = Get value: row, "position"
+endif
 
 if not endsWith (input_directory$, "/")
     input_directory$ = input_directory$ + "/"
@@ -207,18 +242,32 @@ endif
 
 fileList = Create Strings as file list: "fileList", input_directory$ + "*.TextGrid"
 num_of_files = Get number of strings
+total_num_of_files = num_of_files
 
 if num_of_files = 0
     exitScript: "No TextGrid file found in the input directory."
 endif
 
-counter = 0
-total_num_of_files = num_of_files
+if position = total_num_of_files
+    beginPause: ""
+        comment: "It seems that you have already inspected all files."
+        comment: "Do you want to inspect everything again?"
+    clicked = endPause: "Yes", "No", 1, 0
+    if clicked == 1
+        position = 0
+    else
+        select all
+        Remove
+        exitScript: ""
+  endif
+endif
 
-if file_number_position > 0
-    fileList = Extract part: file_number_position, num_of_files
+counter = 0
+
+if position > 0
+    fileList = Extract part: position, num_of_files
     num_of_files = Get number of strings
-    counter = file_number_position - 1
+    counter = position - 1
 endif
 
 for i from 1 to num_of_files
@@ -270,13 +319,29 @@ for i from 1 to num_of_files
         View & Edit
     endif
 
-    beginPause: ""
-        comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files)
-        comment: "Click on Next to proceed."
-    clicked = endPause: "Next", "Interrupt", 1, 2
-
-    if clicked == 2
-        exitScript: ""
+    if inspect_SoundEditor or inspect_TextGrid or inspect_Pitch or inspect_PitchTier or inspect_IntensityTier
+        percent$ = fixed$ (((counter/total_num_of_files) * 100), 0)        
+        if counter == total_num_of_files and inspect_PitchTier == 0
+            beginPause: ""
+                comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files) + " (" + percent$ + "% of files inspected)."
+            clicked = endPause: "Conclude", 1, 0
+        elsif inspect_PitchTier
+            beginPause: ""
+                comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files) + " (" + percent$ + "% of files inspected)."
+            clicked = endPause: "Proceed to PitchTier", "Stop here", 1, 1
+        else
+            beginPause: ""
+                comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files) + " (" + percent$ + "% of files inspected)."
+            clicked = endPause: "Proceed to next file", "Stop here", 1, 1
+        endif
+        selectObject: log
+        Set numeric value: row, "position", counter
+        Save as text file: log_file$
+        if clicked == 2
+            select all
+            Remove
+            exitScript: ""
+        endif
     endif
 
     if inspect_Pitch
@@ -296,11 +361,21 @@ for i from 1 to num_of_files
         pitch_tier = Down to PitchTier
         if inspect_PitchTier
             View & Edit
-            beginPause: ""
-                comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files)
-                comment: "Click on Next to proceed."
-            clicked = endPause: "Next", "Interrupt", 1, 2
+            if counter == total_num_of_files
+                beginPause: ""
+                    comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files) + " (" + percent$ + "% of files inspected)."
+                clicked = endPause: "Conclude", 1, 0
+            else
+                beginPause: ""
+                    comment: "File " + string$ (counter) + " out of " + string$ (total_num_of_files) + " (" + percent$ + "% of files inspected)."
+                clicked = endPause: "Proceed to next file", "Stop here", 1, 1
+            endif
+            selectObject: log
+            Set numeric value: row, "position", counter
+            Save as text file: log_file$
             if clicked == 2
+                select all
+                Remove
                 exitScript: ""
             endif
             editor: pitch_tier
