@@ -47,5 +47,5 @@ Before execution, the user must define the following parameters:
 
 ## State saving
 
-    Because inspecting all files in one go is often impossible, the script tracks progress automatically. If interrupted, it saves the current position, allowing the next run on the same directory to resume where it left off.
+Because inspecting all files in one go is often impossible, the script tracks progress automatically. If interrupted, it saves the current position, allowing the next run on the same directory to resume where it left off.
     
