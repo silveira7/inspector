@@ -66,7 +66,7 @@ form: "Inspector"
     boolean: "Export TextGrid", "1"
     boolean: "Export Pitch", "1"
     boolean: "Export PitchTier", "1"
-    boolean: "Export Intensity", "1"
+    boolean: "Export Intensity", "0"
     boolean: "Export IntensityTier", "1"
 
     comment: "What do you want to inspect?"
@@ -74,10 +74,10 @@ form: "Inspector"
     boolean: "Inspect SoundEditor", "1"
     boolean: "Inspect TextGrid", "1"
     boolean: "Inspect Pitch", "1"
-    boolean: "Inspect PitchTier", "1"
-    boolean: "Inspect IntensityTier", "1"
+    boolean: "Inspect PitchTier", "0"
+    boolean: "Inspect IntensityTier", "0"
 
-    choice: "Saving method", 1
+    choice: "Saving method", 2
     option: "In the input directory"
     option: "In a single different directory"
     option: "In separate directories"
