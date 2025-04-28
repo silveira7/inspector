@@ -7,7 +7,7 @@
 # INSPECTOR
 # --------------------------------------------------------------------
 #
-# Version: 1.0 (2025-04-25)
+# Last modification: 2025-04-28
 # Author: Gustavo Silveira
 # If you encounter any bugs or issues, please report them via email to:
 # silveira@tuta.io
@@ -61,14 +61,6 @@ form: "Inspector"
 
     real: "Time step (s)", "0.001"
 
-    comment: "What do you want to export?"
-
-    boolean: "Export TextGrid", "1"
-    boolean: "Export Pitch", "1"
-    boolean: "Export PitchTier", "1"
-    boolean: "Export Intensity", "0"
-    boolean: "Export IntensityTier", "1"
-
     comment: "What do you want to inspect?"
 
     boolean: "Inspect SoundEditor", "1"
@@ -76,6 +68,14 @@ form: "Inspector"
     boolean: "Inspect Pitch", "1"
     boolean: "Inspect PitchTier", "0"
     boolean: "Inspect IntensityTier", "0"
+
+    comment: "What do you want to export?"
+
+    boolean: "Export TextGrid", "1"
+    boolean: "Export Pitch", "1"
+    boolean: "Export PitchTier", "1"
+    boolean: "Export Intensity", "0"
+    boolean: "Export IntensityTier", "1"
 
     choice: "Saving method", 2
     option: "In the input directory"
